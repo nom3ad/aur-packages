@@ -32,6 +32,18 @@ shift || {
     exit 44
 }
 
+declare -a args
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+    tunnel | serve-web)
+        exec $VSCODE_PATH/bin/code-tunnel "$@"
+        ;;
+    *)
+        args+=("$1")
+        ;;
+    esac
+    shift
+done
+
 # Ref: https://gitlab.archlinux.org/archlinux/packaging/packages/code/-/blob/bd52fad1af1c9fade02d7b2c44d24edd6b742566/code.sh
-export ELECTRON_RUN_AS_NODE=1
-exec /usr/lib/${ELECTRON_NAME}/electron "$CLI_JS" "$CODE_JS" "${electronflags[@]}" "$@"
+ELECTRON_RUN_AS_NODE=1 exec /usr/lib/${ELECTRON_NAME}/electron "$CLI_JS" "$CODE_JS" "${electronflags[@]}" "${args[@]}"

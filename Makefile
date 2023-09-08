@@ -18,14 +18,30 @@ build:
 	read -r -p "Do you want to install $$pkg? [y/N] " && [[ $$REPLY =~ ^[Yy]$$ ]] && sudo pacman -U $$pkg/$$pkgfile; \
 	read -r -p "Do you want to publish $$pkg? [y/N] " && [[ $$REPLY =~ ^[Yy]$$ ]] && make publish pkg=$$pkg
 
+quick-sha256sum-update:
+	@set -e -o pipefail; \
+	cd "$$pkg"; \
+	. ./PKGBUILD; \
+	declare -a sha256sums; \
+	i=0; \
+	block=; \
+	for src in "$${source[@]}"; do \
+			block="$$block'$$(sha256sum $$src | cut -d' ' -f1)'"$$'\n'; \
+	done; \
+	echo -e "$$block"
+
 geninteg:
-	cd "$$pkg" && makepkg --geninteg $$args
+	@cd "$$pkg" && makepkg --geninteg $$args
 
 mksrcinfo:
-	cd "$$pkg" && makepkg --printsrcinfo > .SRCINFO
+	@cd "$$pkg"; \
+	pkgver=$$(grep "^pkgver=" PKGBUILD | cut -d'=' -f2); \
+	pkgrel=$$(grep "^pkgrel=" PKGBUILD | cut -d'=' -f2); \
+	pkgname=$$(grep "^pkgname=" PKGBUILD | cut -d'=' -f2); \
+	pkgfile=$$pkgname-$$pkgver-$$pkgrel-$$(uname -m).pkg.tar.zst; \
 
 build-install:
-	make build args="--install"
+	@make build args="--install"
 
 publish:
-	./aurpublish.sh $$pkg
+	@./aurpublish.sh $$pkg

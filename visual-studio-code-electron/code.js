@@ -13,16 +13,17 @@ const fd = fs.openSync("/proc/self/comm", fs.constants.O_WRONLY);
 fs.writeSync(fd, name);
 fs.closeSync(fd);
 
+const originalArgs = process.argv.slice()
+// Remove code.js command line argument 
+process.argv.splice(2, 1)  // <electron> <cli.js> <code.js>
 try {
     const o = fs.openSync("/tmp/code-start.log", fs.constants.O_APPEND | fs.constants.O_CREAT | fs.constants.O_RDWR);
-    const t = JSON.stringify({ pid: process.pid, argv: process.argv, __dirname, userCache: path.join(app.getPath('cache'), name), userData: path.join(app.getPath('appData'), name) }) + "\n"
+    const t = JSON.stringify({ date: new Date(), pid: process.pid, argv0: process.argv0, originalArgs, argv: process.argv, __dirname }) + "\n"
     fs.writeSync(o, t);
     fs.closeSync(o);
     process.stderr.write(t)
 } catch (e) { }
 
-// Remove first command line argument (/usr/lib/code/code.js). - We call the CLI file first
-process.argv.splice(0, 1);
 
 // Set application paths.
 const appPath = path.join(__dirname, 'resources', 'app');
