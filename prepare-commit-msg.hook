@@ -2,6 +2,8 @@
 
 # Sourced: https://github.com/dcelasun/pkgbuilds/blob/master/prepare-commit-msg.hook
 
+echo "Exec prepare-commit-msg hook" >&2
+
 old_commit_msg="$(cat ${1})"
 echo -n "" > "${1}"
 
