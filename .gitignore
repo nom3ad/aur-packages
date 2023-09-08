@@ -1,4 +1,26 @@
+# cleanup script
+cleanup.sh
+
+# makepkg directory
+*/pkg/*
+*/src/*
+
+# Binary and source packages
+*.tar.xz
 *.tar.gz
-*.pkg.tar.zst
-*/pkg/**
-*/src/**
+*.tar.bz2
+*.zip
+*.tar
+*.7z
+*.rpm
+*.deb
+*.exe
+*.tgz
+*.run
+# Backup files
+*~
+# Signatures
+*.sig
+*.asc
+
+*.tar.zst
