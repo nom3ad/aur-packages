@@ -15,10 +15,11 @@ fs.closeSync(fd);
 
 const originalArgs = process.argv.slice()
 // Remove code.js command line argument 
-process.argv.splice(2, 1)  // <electron> <cli.js> <code.js>
+process.argv = [path.join(__dirname, "code"), ...process.argv.slice(2)]
+// [<electron> <code.js> --ms-enable-electron-run-as-node $@]
 try {
-    const o = fs.openSync("/tmp/code-start.log", fs.constants.O_APPEND | fs.constants.O_CREAT | fs.constants.O_RDWR);
-    const t = JSON.stringify({ date: new Date(), pid: process.pid, argv0: process.argv0, originalArgs, argv: process.argv, __dirname }) + "\n"
+    const o = fs.openSync("/var/tmp/code-start.log", fs.constants.O_APPEND | fs.constants.O_CREAT | fs.constants.O_RDWR);
+    const t = JSON.stringify({ date: new Date(), pid: process.pid, argv0: process.argv0, originalArgs, argv: process.argv, __dirname, execPath: process.execPath, execArgv: process.execArgv }) + "\n"
     fs.writeSync(o, t);
     fs.closeSync(o);
     process.stderr.write(t)
@@ -30,7 +31,7 @@ const appPath = path.join(__dirname, 'resources', 'app');
 const packageJson = require(path.join(appPath, 'package.json'));
 app.setAppPath(appPath);
 app.setDesktopName(name + '.desktop');
-// app.setName(name);
+app.setName(name);
 // app.setPath('userCache', path.join(app.getPath('cache'), name));
 // app.setPath('userData', path.join(app.getPath('appData'), name));
 app.setVersion(packageJson.version);

@@ -2,6 +2,7 @@
 
 pkgname=visual-studio-code-electron
 _pkgname=visual-studio-code
+_electron_name=electron25
 pkgver=1.82.0
 pkgrel=1
 pkgdesc="Visual Studio Code (vscode): Editor for building and debugging modern web and cloud applications (official binary version running on system Electron)"
@@ -13,13 +14,13 @@ conflicts=('code')
 install=$pkgname.install
 # lsof: needed for terminal splitting, see https://github.com/Microsoft/vscode/issues/62991
 # xdg-utils: needed for opening web links with xdg-open
-depends=(libxkbfile gnupg gtk3 libsecret nss gcc-libs libnotify libxss glibc lsof shared-mime-info xdg-utils alsa-lib)
+depends=("$_electron_name" libxkbfile gnupg gtk3 libsecret nss gcc-libs libnotify libxss glibc lsof shared-mime-info xdg-utils alsa-lib)
 optdepends=('glib2: Needed for move to trash functionality'
             'libdbusmenu-glib: Needed for KDE global menu'
             'org.freedesktop.secrets: Needed for settings sync'
              # See https://github.com/MicrosoftDocs/live-share/issues/4650
             'icu69: Needed for live share' )
-source=(code.desktop code-url-handler.desktop ${_pkgname}-workspace.xml code.js electron.sh ${_pkgname}-bin.sh)
+source=(code.desktop code-url-handler.desktop ${_pkgname}-workspace.xml code.js wrapper.sh ${_pkgname}-bin.sh)
 source_x86_64=(code_x64_${pkgver}.tar.gz::https://update.code.visualstudio.com/${pkgver}/linux-x64/stable)
 source_aarch64=(code_arm64_${pkgver}.tar.gz::https://update.code.visualstudio.com/${pkgver}/linux-arm64/stable)
 source_armv7h=(code_armhf_${pkgver}.tar.gz::https://update.code.visualstudio.com/${pkgver}/linux-armhf/stable)
@@ -72,7 +73,12 @@ package() {
   # remove vendored electron stuff
   find "${pkgdir}/opt/${_pkgname}" -mindepth 1 -maxdepth 1 ! -name 'bin' ! -name 'resources' -exec rm -rv {} +;
   install -m755 "${srcdir}/code.js" "${pkgdir}/opt/${_pkgname}/code.js"
-  install -m755 "${srcdir}/electron.sh" "${pkgdir}/opt/${_pkgname}/code"
+  install -m755 "${srcdir}/wrapper.sh" "${pkgdir}/opt/${_pkgname}/code"
+  sed "s|/usr/bin/electron|/usr/lib/$_electron_name/electron|g" -i "${pkgdir}/opt/${_pkgname}/code.js"
+  sed "s|^ELECTRON_NAME=electron$|ELECTRON_NAME=$_electron_name|g" -i "${pkgdir}/opt/${_pkgname}/code"
+  # ln -s /usr/lib/$_electron_name/electron "${pkgdir}/opt/${_pkgname}/code-$_electron_name"
+  mkdir -p "${pkgdir}/usr/lib/$_electron_name/bin"
+  ln -s "/opt/${_pkgname}/bin/code" "${pkgdir}/usr/lib/$_electron_name/bin/code"
   
   # Launcher
 	install -m755 "${srcdir}/${_pkgname}-bin.sh" "${pkgdir}/usr/bin/code"
