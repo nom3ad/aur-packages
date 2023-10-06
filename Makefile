@@ -30,6 +30,11 @@ quick-build-install:
 
 show-sha256sum:
 	@set -e -o pipefail; \
+	if [[ -z $$pkg ]]; then \
+		select pkg in $$(find . -maxdepth 1 -type d  ! -name '.*' -printf '%f\n'); do \
+			break;\
+		done; \
+	fi; \
 	cd "$$pkg"; \
 	. ./PKGBUILD; \
 	declare -a sha256sums; \
@@ -44,11 +49,14 @@ geninteg:
 	@cd "$$pkg" && makepkg --geninteg $$args
 
 mksrcinfo:
-	@cd "$$pkg"; \
-	pkgver=$$(grep "^pkgver=" PKGBUILD | cut -d'=' -f2); \
-	pkgrel=$$(grep "^pkgrel=" PKGBUILD | cut -d'=' -f2); \
-	pkgname=$$(grep "^pkgname=" PKGBUILD | cut -d'=' -f2); \
-	pkgfile=$$pkgname-$$pkgver-$$pkgrel-$$(uname -m).pkg.tar.zst; \
+	@set -e -o pipefail; \
+	if [[ -z $$pkg ]]; then \
+		select pkg in $$(find . -maxdepth 1 -type d  ! -name '.*' -printf '%f\n'); do \
+			break;\
+		done; \
+	fi; \
+	cd "$$pkg"; \
+ 	makepkg --printsrcinfo > .SRCINFO
 
 build-install:
 	@make build args="--install"
