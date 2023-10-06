@@ -18,7 +18,17 @@ build:
 	read -r -p "Do you want to install $$pkg? [y/N] " && [[ $$REPLY =~ ^[Yy]$$ ]] && sudo pacman -U $$pkg/$$pkgfile; \
 	read -r -p "Do you want to publish $$pkg? [y/N] " && [[ $$REPLY =~ ^[Yy]$$ ]] && make publish pkg=$$pkg
 
-quick-sha256sum-update:
+quick-build-install:
+	@set -e; \
+	if [[ -z $$pkg ]]; then \
+		select pkg in $$(find . -maxdepth 1 -type d  ! -name '.*' -printf '%f\n'); do \
+			break;\
+		done; \
+	fi; \
+	cd "$$pkg"; \
+	makepkg --skipinteg --install -f 
+
+show-sha256sum:
 	@set -e -o pipefail; \
 	cd "$$pkg"; \
 	. ./PKGBUILD; \
